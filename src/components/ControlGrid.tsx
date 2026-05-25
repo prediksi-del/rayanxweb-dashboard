@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/Card";
 import { 
-  MapPin, Bell, Image, Contacts, PhoneCall, Camera, 
+  MapPin, Bell, Image, Contact, PhoneCall, Camera, 
   Layers, Sliders, Flashlight, Unlock, Video, Folder, 
   MessageSquare, Monitor, KeyRound, RefreshCw, Eye
 } from "lucide-react";
@@ -17,7 +17,7 @@ export default function ControlGrid({ onActionTrigger }: ControlGridProps) {
     { id: "lacak", label: "Lacak GPS", icon: MapPin, color: "text-emerald-400" },
     { id: "notifikasi", label: "Push Notif", icon: Bell, color: "text-cyan-400" },
     { id: "gallery", label: "Dump Galeri", icon: Image, color: "text-indigo-400" },
-    { id: "kontak", label: "Ambil Kontak", icon: Contacts, color: "text-purple-400" },
+    { id: "kontak", label: "Ambil Kontak", icon: Contact, color: "text-purple-400" }, // <-- Sudah diperbaiki ke 'Contact'
     { id: "panggilan", label: "Log Telpon", icon: PhoneCall, color: "text-pink-400" },
     { id: "live_camera", label: "Live Kamera", icon: Camera, color: "text-amber-400" },
     { id: "app_mgmt", label: "Daftar App", icon: Layers, color: "text-rose-400" },
@@ -54,4 +54,4 @@ export default function ControlGrid({ onActionTrigger }: ControlGridProps) {
       })}
     </div>
   );
-    }
+}
