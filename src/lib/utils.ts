@@ -2,10 +2,18 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 /**
- * Fungsi utilitas dinamis 'cn' (Class Name)
- * Berguna untuk menggabungkan kelas Tailwind CSS tradisional dengan conditional class
- * secara aman tanpa konflik variasi (override otomatis).
+ * Menggabungkan class Tailwind dengan aman untuk mencegah konflik
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+/**
+ * Format timestamp ke string waktu manusia (mencegah hydration warning)
+ */
+export function formatTime(timestamp: number) {
+  return new Date(timestamp).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
