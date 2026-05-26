@@ -5,8 +5,7 @@
   "author": "RayanXWeb Security Enterprise",
   "description": "Enterprise-Grade Futuristic Cyber Security Dashboard Node",
   "engines": {
-    "node": ">=18.17.0",
-    "npm": ">=9.0.0"
+    "node": "20.x"
   },
   "scripts": {
     "dev": "next dev",
@@ -28,7 +27,7 @@
     "jose": "^6.0.0",
     "lucide-react": "^0.475.0",
     "mongoose": "^8.10.0",
-    "next": "15.1.7",
+    "next": "15.1.8",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hook-form": "^7.54.2",
@@ -44,7 +43,7 @@
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
     "eslint": "^9.20.1",
-    "eslint-config-next": "15.1.7",
+    "eslint-config-next": "15.1.8",
     "postcss": "^8.5.2",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3"
