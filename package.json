@@ -2,12 +2,19 @@
   "name": "rayanxweb-dashboard",
   "version": "1.0.0",
   "private": true,
+  "author": "RayanXWeb Security Enterprise",
+  "description": "Enterprise-Grade Futuristic Cyber Security Dashboard Node",
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next node_modules"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.0",
@@ -15,6 +22,8 @@
     "axios": "^1.7.9",
     "bcryptjs": "^3.0.0",
     "clsx": "^2.1.1",
+    "firebase": "^10.12.0",
+    "firebase-admin": "^12.1.0",
     "framer-motion": "^12.4.0",
     "jose": "^6.0.0",
     "lucide-react": "^0.475.0",
