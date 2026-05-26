@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cyber-dark text-slate-100 font-mono selection:bg-cyber-cyan/30 selection:text-cyber-cyan antialiased;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(189, 0, 255, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .floating-glass-card {
+    @apply bg-glass-panel backdrop-blur-xl border border-white/5 rounded-2xl shadow-neumorphism-card transition-all duration-300 hover:border-cyber-cyan/30;
+  }
+  
+  .neon-btn-cyan {
+    @apply bg-cyber-dark text-cyber-cyan border border-cyber-cyan/50 rounded-xl px-5 py-2.5 font-bold tracking-widest shadow-glow-cyan hover:bg-cyber-cyan hover:text-cyber-dark transition-all duration-300;
+  }
+
+  .neon-btn-purple {
+    @apply bg-cyber-dark text-cyber-purple border border-cyber-purple/50 rounded-xl px-5 py-2.5 font-bold tracking-widest shadow-glow-purple hover:bg-cyber-purple hover:text-slate-100 transition-all duration-300;
+  }
+
+  .futuristic-input {
+    @apply bg-cyber-input border border-white/10 rounded-xl px-4 py-3 text-slate-200 shadow-inset-cyber focus:outline-none focus:border-cyber-cyan/70 focus:ring-1 focus:ring-cyber-cyan/50 transition-all duration-200;
+  }
+    }
