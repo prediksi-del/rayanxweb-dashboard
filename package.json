@@ -1,9 +1,10 @@
 {
   "name": "rayanxweb-dashboard",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "author": "RayanXWeb Security Enterprise",
-  "description": "Enterprise-Grade Futuristic Cyber Security Dashboard Node",
+  "description": "Enterprise-Grade Futuristic Cyber Security Dashboard Node - Patched 2026",
+  "type": "module",
   "engines": {
     "node": "20.x"
   },
@@ -13,13 +14,13 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf .next node_modules"
+    "clean": "rm -rf .next node_modules package-lock.json && npm cache clean --force"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.0",
     "@tanstack/react-query": "^5.66.0",
     "axios": "^1.7.9",
-    "bcryptjs": "^3.0.0",
+    "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
     "firebase": "^10.12.0",
     "firebase-admin": "^12.1.0",
@@ -27,13 +28,14 @@
     "jose": "^6.0.0",
     "lucide-react": "^0.475.0",
     "mongoose": "^8.10.0",
-    "next": "15.1.8",
+    "next": "15.2.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hook-form": "^7.54.2",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
+    "uuid": "^11.0.5",
     "zod": "^3.24.2",
     "zustand": "^5.0.3"
   },
@@ -42,8 +44,9 @@
     "@types/node": "^22.13.4",
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
+    "@types/uuid": "^10.0.0",
     "eslint": "^9.20.1",
-    "eslint-config-next": "15.1.8",
+    "eslint-config-next": "15.2.0",
     "postcss": "^8.5.2",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3"
