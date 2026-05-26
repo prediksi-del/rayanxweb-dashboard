@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rayanx-dashboard-node
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb+fallback_uri_here
+      - JWT_SECRET=rayanxweb_default_secret_key_64_bytes_secure
+      - REDIS_URL=redis://redis-cluster:6379
+
+  nginx-reverse-proxy:
+    image: nginx:alpine
+    container_name: rayanx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - dashboard
