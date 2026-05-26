@@ -5,10 +5,9 @@ import { useSocket } from "../providers/SocketProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { WsDevicePayload, WsAlertPayload } from "../events/event-types";
 
-// Definisikan tipe log yang masuk secara eksplisit sesuai arsitektur gateway
-interface IncomingLogPayload {
+export interface LiveLogItem {
   message: string;
-  timestamp: string | number;
+  timestamp: string;
 }
 
 export const useRealtimeDashboard = () => {
@@ -17,55 +16,47 @@ export const useRealtimeDashboard = () => {
   const [liveLogs, setLiveLogs] = useState<string[]>([]);
 
   useEffect(() => {
-    // Jika socket belum siap, jangan lakukan binding
-    if (!socket) return;
+    if (!socket || !isConnected) return;
 
-    // Masuk ke room khusus dashboard metrics di gateway eksternal
-    if (isConnected) {
-      socket.emit("room:join", "dashboard_metrics");
-    }
+    // Masuk ke dalam kluster internal metrik dasbor
+    socket.emit("room:join", "dashboard_metrics");
 
-    // Handler referensi agar fungsi tetap bersih
+    // Tangkap sinyal pembaruan gawai dari infrastruktur Railway
     const handleDeviceUpdate = (data: WsDevicePayload) => {
-      // Menggunakan void karena invalidateQueries bersifat asinkronus
-      void queryClient.invalidateQueries({ queryKey: ["device-metrics"] });
-      void queryClient.invalidateQueries({ queryKey: ["devices-list"] });
+      queryClient.invalidateQueries({ queryKey: ["device-metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["devices-list"] });
     };
 
+    // Tangkap sinyal ancaman siber baru
     const handleSecurityAlert = (alert: WsAlertPayload) => {
-      void queryClient.invalidateQueries({ queryKey: ["security-alerts"] });
+      queryClient.invalidateQueries({ queryKey: ["security-alerts"] });
     };
 
-    const handleNewLogs = (log: IncomingLogPayload) => {
-      const timeString = typeof log.timestamp === "number" 
-        ? new Date(log.timestamp).toLocaleTimeString() 
-        : log.timestamp;
-
+    // Tangkap aliran teks log konsol mentah secara realtime
+    const handleNewLog = (log: LiveLogItem) => {
       setLiveLogs((prev) => {
-        const updatedLogs = [`[${timeString}] ${log.message}`, ...prev];
-        // Batasi ukuran array maksimal 50 baris untuk mencegah kelebihan beban render DOM (crash)
-        return updatedLogs.slice(0, 50);
+        const formattedLog = `[${log.timestamp}] ${log.message}`;
+        // Batasi memori tumpukan log hanya sampai 50 baris terakhir demi performa UI
+        return [formattedLog, ...prev.slice(0, 49)];
       });
     };
 
-    // Daftarkan event listeners ke instance socket
+    // Daftarkan fungsi pendengar (Listeners) ke dalam engine Socket.IO
     socket.on("device:update", handleDeviceUpdate);
     socket.on("security:alert", handleSecurityAlert);
-    socket.on("logs:new", handleNewLogs);
+    socket.on("logs:new", handleNewLog);
 
-    // Jalankan pembersihan menyeluruh saat komponen unmount atau koneksi putus
+    // Fungsi pembersihan (Cleanup) saat komponen dimatikan oleh React 19
     return () => {
-      if (isConnected) {
-        socket.emit("room:leave", "dashboard_metrics");
-      }
+      socket.emit("room:leave", "dashboard_metrics");
       socket.off("device:update", handleDeviceUpdate);
       socket.off("security:alert", handleSecurityAlert);
-      socket.off("logs:new", handleNewLogs);
+      socket.off("logs:new", handleNewLog);
     };
   }, [socket, isConnected, queryClient]);
 
   return { 
-    isLive: isConnected && !!socket, 
+    isLive: isConnected, 
     liveLogs 
   };
 };
