@@ -1,7 +1,15 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { useSocket } from "../providers/SocketProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { WsDevicePayload, WsAlertPayload } from "../events/event-types";
+
+// Definisikan tipe log yang masuk secara eksplisit sesuai arsitektur gateway
+interface IncomingLogPayload {
+  message: string;
+  timestamp: string | number;
+}
 
 export const useRealtimeDashboard = () => {
   const { socket, isConnected } = useSocket();
@@ -9,30 +17,55 @@ export const useRealtimeDashboard = () => {
   const [liveLogs, setLiveLogs] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!socket || !isConnected) return;
+    // Jika socket belum siap, jangan lakukan binding
+    if (!socket) return;
 
-    socket.emit("room:join", "dashboard_metrics");
+    // Masuk ke room khusus dashboard metrics di gateway eksternal
+    if (isConnected) {
+      socket.emit("room:join", "dashboard_metrics");
+    }
 
-    socket.on("device:update", (data: WsDevicePayload) => {
-      queryClient.invalidateQueries({ queryKey: ["device-metrics"] });
-      queryClient.invalidateQueries({ queryKey: ["devices-list"] });
-    });
+    // Handler referensi agar fungsi tetap bersih
+    const handleDeviceUpdate = (data: WsDevicePayload) => {
+      // Menggunakan void karena invalidateQueries bersifat asinkronus
+      void queryClient.invalidateQueries({ queryKey: ["device-metrics"] });
+      void queryClient.invalidateQueries({ queryKey: ["devices-list"] });
+    };
 
-    socket.on("security:alert", (alert: WsAlertPayload) => {
-      queryClient.invalidateQueries({ queryKey: ["security-alerts"] });
-    });
+    const handleSecurityAlert = (alert: WsAlertPayload) => {
+      void queryClient.invalidateQueries({ queryKey: ["security-alerts"] });
+    };
 
-    socket.on("logs:new", (log) => {
-      setLiveLogs((prev) => [ `[${log.timestamp}] ${log.message}`, ...prev.slice(0, 49) ]);
-    });
+    const handleNewLogs = (log: IncomingLogPayload) => {
+      const timeString = typeof log.timestamp === "number" 
+        ? new Date(log.timestamp).toLocaleTimeString() 
+        : log.timestamp;
 
+      setLiveLogs((prev) => {
+        const updatedLogs = [`[${timeString}] ${log.message}`, ...prev];
+        // Batasi ukuran array maksimal 50 baris untuk mencegah kelebihan beban render DOM (crash)
+        return updatedLogs.slice(0, 50);
+      });
+    };
+
+    // Daftarkan event listeners ke instance socket
+    socket.on("device:update", handleDeviceUpdate);
+    socket.on("security:alert", handleSecurityAlert);
+    socket.on("logs:new", handleNewLogs);
+
+    // Jalankan pembersihan menyeluruh saat komponen unmount atau koneksi putus
     return () => {
-      socket.emit("room:leave", "dashboard_metrics");
-      socket.off("device:update");
-      socket.off("security:alert");
-      socket.off("logs:new");
+      if (isConnected) {
+        socket.emit("room:leave", "dashboard_metrics");
+      }
+      socket.off("device:update", handleDeviceUpdate);
+      socket.off("security:alert", handleSecurityAlert);
+      socket.off("logs:new", handleNewLogs);
     };
   }, [socket, isConnected, queryClient]);
 
-  return { isLive: isConnected, liveLogs };
+  return { 
+    isLive: isConnected && !!socket, 
+    liveLogs 
+  };
 };
