@@ -1,0 +1,41 @@
+name: RayanXWeb Security Dashboard CI/CD Matrix
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  audit_and_validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Base
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20 Environment
+        uses: actions/setup-node@v4
+        with:
+          node-index: '20'
+          cache: 'npm'
+
+      - name: Clean Install Enterprise Dependencies
+        run: npm ci
+
+      - name: Security Vulnerability Scan
+        run: npm audit --audit-level=high
+
+      - name: Strict TypeScript Compilation Verification
+        run: npm run type-check
+
+      - name: Static Code Analysis (Linter)
+        run: npm run lint
+
+      - name: Build Matrix Production Compilation Test
+        run: npm run build
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NEXT_PUBLIC_API_URL: https://rayanxweb-gateway-production-cc5e.up.railway.app
+          NEXT_PUBLIC_SOCKET_URL: wss://rayanxweb-gateway-production-cc5e.up.railway.app
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
