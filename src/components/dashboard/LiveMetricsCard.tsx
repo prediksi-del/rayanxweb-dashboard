@@ -10,7 +10,13 @@ interface MetricsCardProps {
   description: string;
 }
 
-export const LiveMetricsCard: React.FC<MetricsCardProps> = ({ label, value, variant, description }) => {
+export const LiveMetricsCard: React.FC<MetricsCardProps> = ({ 
+  label, 
+  value, 
+  variant, 
+  description 
+}) => {
+  // Pemetaan class gaya visual bertema siber / neon-glow
   const styles = {
     cyan: "border-cyber-cyan/30 text-cyber-cyan shadow-glow-cyan",
     purple: "border-cyber-purple/30 text-cyber-purple shadow-glow-purple",
