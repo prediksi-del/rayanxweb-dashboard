@@ -1,49 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminMessaging } from "@/lib/firebase-admin";
 import { connectDB } from "@/database/connection/mongoose";
-import { AuditLogModel } from "@/database/models/schemas";
-import z from "zod";
+import { DeviceModel } from "@/database/models/schemas";
+import { generateSecureDeviceToken } from "@/utils/uuidGenerator";
+import * as jose from "jose";
 
-const controlSchema = z.object({
-  deviceId: z.string(),
-  command: z.enum(["TOGGLE_FLASHLIGHT", "LOCK_SCREEN", "WIPE_DATA", "PUSH_NOTIFICATION"]),
-  payload: z.record(z.any()).optional(),
-});
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
+
+    // Proteksi Sesi Jaringan Internal via JWT Validation
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Access denied: Missing cryptographic handshake" }, { status: 401 });
+    }
+    const token = authHeader.split(" ")[1];
+    await jose.jwtVerify(token, SECRET);
+
     const body = await req.json();
-    
-    // Zod Validation Schema
-    const parsed = controlSchema.parse(body);
+    const { name, osVersion, ipAddress } = body;
 
-    // Kirim instruksi realtime ke perangkat gawai target menggunakan Firebase Cloud Messaging (FCM)
-    const messagePayload = {
-      topic: `device_${parsed.deviceId}`,
-      data: {
-        action: parsed.command,
-        payload: JSON.stringify(parsed.payload || {}),
-        emittedAt: new Date().toISOString(),
-      },
-      android: {
-        priority: "high" as const,
-      }
-    };
+    // Menghasilkan ID unik gawai menggunakan engine UUID v11 ESM yang baru direfaktur
+    const secureDeviceId = generateSecureDeviceToken();
 
-    const fcmMessageId = await adminMessaging.send(messagePayload);
-
-    // Catat ke Audit Log MongoDB untuk keperluan tracking kepatuhan siber (Compliance)
-    await AuditLogModel.create({
-      userId: "SYSTEM_GATEWAY", // Ambil dari session token asli di skenario nyata
-      action: parsed.command,
-      module: "DEVICE_MANAGEMENT",
-      ipAddress: req.headers.get("x-forwarded-for") || "127.0.0.1",
-      payload: JSON.stringify(parsed.payload),
+    const newDevice = await DeviceModel.create({
+      deviceId: secureDeviceId,
+      name,
+      osVersion,
+      status: "ONLINE",
+      ipAddress: ipAddress || "127.0.0.1",
+      lastSeen: new Date(),
     });
 
-    return NextResponse.json({ status: "COMMAND_DISPATCHED", fcmMessageId });
+    return NextResponse.json({
+      status: "SUCCESS_ENROLLED",
+      node: {
+        id: newDevice.deviceId,
+        name: newDevice.name,
+        status: newDevice.status
+      }
+    }, { status: 201 });
+
   } catch (error: any) {
-    return NextResponse.json({ error: error.errors || error.message }, { status: 400 });
+    return NextResponse.json({ error: error.message || "Matrix operation aborted" }, { status: 500 });
   }
 }
